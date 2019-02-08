@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+EXPECTED_FILES="block.cpp chain.h chain.cpp partners.txt"
+
+echo $EXPECTED_FILES
+
+SUBMISSION_SOURCE=/autograder/submission
+
+cd /autograder/source
+ls -als
+
+for f in $EXPECTED_FILES; do
+    if [ -f $SUBMISSION_SOURCE/$f ]; then
+        cp -v $SUBMISSION_SOURCE/$f .
+    else
+        echo "WARNING: Expected file $f not found in $SUBMISSION_SOURCE"
+    fi
+done
+
+rm -f results.json
+
+make clean
+make all
+
+if [ -f testblock ]; then
+    #./testblock -r xml -s &> resultblock.xml
+    ./testblock -r xml -s | tee resultblock.xml
+    ./testblock 
+    #/usr/bin/unbuffer ./testblock -r xml -s > resultblock.xml
+fi
+
+if [ -f testchain ]; then
+    #./testchain -r xml -s &> resultchain.xml
+    ./testchain -r xml -s | tee resultchain.xml
+    ./testchain 
+    #/usr/bin/unbuffer ./testchain -r xml -s > resultchain.xml
+fi
+
+python xml2json.py
+
+if [ -d /autograder/results ]; then
+    cp -v results.json /autograder/results/results.json
+fi
+
+cd ..
